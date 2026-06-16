@@ -214,12 +214,7 @@ export default function Shopping() {
         setSelectedStore(NEARBY_STORES[0]);
       }
     } catch (err) {
-      console.warn("Overpass query failed", err);
-      toast({
-        title: "API Error",
-        description: "Could not query OpenStreetMap. Using default local list.",
-        variant: "destructive"
-      });
+      console.warn("Overpass query failed, falling back to default store list:", err);
       setStores(NEARBY_STORES);
       setSelectedStore(NEARBY_STORES[0]);
     } finally {
