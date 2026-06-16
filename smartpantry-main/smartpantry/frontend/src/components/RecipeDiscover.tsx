@@ -361,7 +361,9 @@ export function RecipeDiscover() {
       <div className="glass-card border-michelin p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <Compass className="h-4 w-4 text-primary" />
-          <p className="text-xs font-bold text-primary uppercase tracking-widest">Powered by Recipe API</p>
+          <p className="text-xs font-bold text-primary uppercase tracking-widest">
+            Powered by <a href="https://recipe-api.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary/80 transition-colors">Recipe API</a>
+          </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
@@ -401,6 +403,7 @@ export function RecipeDiscover() {
         </div>
         <p className="text-[11px] text-muted-foreground">
           Find any recipe from a catalog of 25,000+ — add it directly to your SmartPantry library with one click.
+          Recipe and ingredient index courtesy of <a href="https://recipe-api.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary transition-colors">recipe-api.com</a>.
           Nutrition data from USDA FoodData Central.
         </p>
       </div>

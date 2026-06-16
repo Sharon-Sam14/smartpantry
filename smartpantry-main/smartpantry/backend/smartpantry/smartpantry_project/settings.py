@@ -161,6 +161,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8082",
 ]
 
+# Append custom CORS origins from environment variable if set (comma-separated)
+cors_env = os.environ.get("CORS_ALLOWED_ORIGINS")
+if cors_env:
+    for origin in cors_env.split(","):
+        clean_origin = origin.strip()
+        if clean_origin and clean_origin not in CORS_ALLOWED_ORIGINS:
+            CORS_ALLOWED_ORIGINS.append(clean_origin)
+
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https?://localhost:\d+$",
     r"^https?://127\.0\.0\.1:\d+$",
