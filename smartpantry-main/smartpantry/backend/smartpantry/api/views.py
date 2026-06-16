@@ -304,8 +304,20 @@ class PreferencesView(APIView):
 @permission_classes([AllowAny])
 def geolocate(request):
     try:
+        # Extract the client's actual IP from the proxy headers (X-Forwarded-For)
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(",")[0].strip()
+        else:
+            ip = request.META.get("REMOTE_ADDR")
+
+        # Determine the target geolocation URL
+        url = "https://freeipapi.com/api/json"
+        if ip and ip not in ("127.0.0.1", "localhost", "::1"):
+            url = f"https://freeipapi.com/api/json/{ip}"
+
         req = urllib.request.Request(
-            "https://freeipapi.com/api/json",
+            url,
             headers={"User-Agent": "Mozilla/5.0"}
         )
         with urllib.request.urlopen(req, timeout=5) as response:

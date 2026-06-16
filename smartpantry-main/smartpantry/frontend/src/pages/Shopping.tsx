@@ -131,10 +131,32 @@ export default function Shopping() {
           way(around:10000,${lat},${lng})[amenity=marketplace];
         );
         out center 15;`;
-      const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("Overpass API error");
-      const data = await res.json();
+      const mirrors = [
+        "https://overpass-api.de/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter",
+        "https://overpass.nchc.org.tw/api/interpreter"
+      ];
+      
+      let data = null;
+      let fetchSuccess = false;
+      
+      for (const mirror of mirrors) {
+        try {
+          const url = `${mirror}?data=${encodeURIComponent(query)}`;
+          const res = await fetch(url);
+          if (res.ok) {
+            data = await res.json();
+            fetchSuccess = true;
+            break;
+          }
+        } catch (mirrorErr) {
+          console.warn(`Overpass API mirror ${mirror} query failed, trying next...`, mirrorErr);
+        }
+      }
+      
+      if (!fetchSuccess || !data) {
+        throw new Error("All Overpass API mirrors failed");
+      }
       
       if (data.elements && data.elements.length > 0) {
         const mapped: NearbyStore[] = data.elements.map((el: any, idx: number) => {
