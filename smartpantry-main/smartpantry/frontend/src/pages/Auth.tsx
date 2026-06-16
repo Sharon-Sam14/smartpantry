@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
+import { API_BASE } from "@/lib/api";
 
 export default function Auth() {
   const { signIn, signUp, backendOnline } = useStore();
@@ -40,7 +41,7 @@ export default function Auth() {
         ? mode === "signup"
           ? "Could not sign up. Email may already be in use."
           : "Invalid email or password."
-        : "Backend unreachable. Make sure Django is running at http://127.0.0.1:8000";
+        : `Backend unreachable. Make sure Django is running at ${API_BASE}`;
       toast({ title: "Sign-in failed", description: friendly, variant: "destructive" });
     } finally {
       setBusy(false);
