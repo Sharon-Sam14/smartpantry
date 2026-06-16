@@ -136,10 +136,14 @@ else:
 first_id = body.get('data', [{}])[0].get('id') if isinstance(body, dict) else None
 if first_id:
     status2, full = req('GET', '/discover/recipes/' + first_id + '/', token=token)
-    has_nutrition = bool(full.get('nutrition', {}).get('per_serving'))
-    cal = full.get('nutrition', {}).get('per_serving', {}).get('calories', '?')
+    # recipe-api.com wraps the single recipe in { "data": {...}, "usage": {...} }
+    recipe_obj = full.get('data', full) if isinstance(full, dict) else full
+    has_nutrition = bool(recipe_obj.get('nutrition', {}).get('per_serving'))
+    cal = recipe_obj.get('nutrition', {}).get('per_serving', {}).get('calories', '?')
+    is_estimated = recipe_obj.get('nutrition', {}).get('per_serving', {}).get('_estimated', False)
+    label = " (estimated)" if is_estimated else ""
     if status2 == 200 and has_nutrition:
-        ok(13, "Enrich recipe nutrition — 32 nutrients loaded, calories=" + str(cal))
+        ok(13, "Enrich recipe nutrition" + label + " — calories=" + str(cal))
     else:
         fail(13, "Enrich recipe — status=" + str(status2) + " has_nutrition=" + str(has_nutrition))
 else:

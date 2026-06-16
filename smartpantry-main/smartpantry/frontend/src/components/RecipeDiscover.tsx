@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart, ChefHat, X, Flame, Zap, Droplets,
   Wheat, Search, Loader2, Plus, CheckCircle, AlertCircle,
-  BookOpen, Leaf, Clock, Compass
+  BookOpen, Leaf, Clock, Compass, FlaskConical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,9 +43,10 @@ type CatalogRecipe = {
 };
 
 // ── Macronutrient visual bar ──────────────────────────────────
-function MacroBar({ label, value, unit, color, icon }: {
-  label: string; value: number | null; unit: string; color: string; icon: React.ReactNode;
+function MacroBar({ label, value, unit, color, icon, estimated }: {
+  label: string; value: number | null; unit: string; color: string; icon: React.ReactNode; estimated?: boolean;
 }) {
+  const hasValue = value !== null && value !== undefined;
   return (
     <div className="flex items-center gap-3 py-2.5 border-b border-border/20 last:border-0">
       <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${color} shrink-0`}>
@@ -54,8 +55,8 @@ function MacroBar({ label, value, unit, color, icon }: {
       <div className="flex-1 min-w-0">
         <span className="text-xs font-semibold text-[var(--text-2)]">{label}</span>
       </div>
-      <span className="text-sm font-bold text-[var(--text-1)] tabular-nums">
-        {value !== null && value !== undefined ? `${Number(value).toFixed(1)}${unit}` : "—"}
+      <span className={`text-sm font-bold tabular-nums ${hasValue ? "text-[var(--text-1)]" : "text-muted-foreground/40"}`}>
+        {hasValue ? `${estimated ? "~" : ""}${Number(value).toFixed(1)}${unit}` : "—"}
       </span>
     </div>
   );
@@ -64,6 +65,7 @@ function MacroBar({ label, value, unit, color, icon }: {
 // ── Nutrition Panel ───────────────────────────────────────────
 function NutritionPanel({ nutrition }: { nutrition: CatalogRecipe["nutrition"] }) {
   const n = nutrition.per_serving;
+  const isEstimated = !!(n as any)?._estimated;
   const vitamins = [
     { key: "vitamin_a_mcg", label: "Vitamin A", unit: "mcg" },
     { key: "vitamin_c_mg", label: "Vitamin C", unit: "mg" },
@@ -85,11 +87,22 @@ function NutritionPanel({ nutrition }: { nutrition: CatalogRecipe["nutrition"] }
 
   return (
     <div className="space-y-4">
+      {/* Estimated badge */}
+      {isEstimated && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+          <FlaskConical className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+          <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium leading-snug">
+            <span className="font-bold">Estimated nutrition</span> — ingredient-based USDA calculation.
+            Values shown with <span className="font-bold">~</span> are approximations.
+          </p>
+        </div>
+      )}
+
       {/* Calorie hero */}
       <div className="flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-[var(--accent-gold)]/10 to-primary/10 rounded-xl border border-[var(--accent-gold)]/20">
         <Flame className="h-5 w-5 text-[var(--accent-gold)]" />
         <span className="font-fraunces text-3xl font-bold text-[var(--text-1)]">
-          {n.calories !== null && n.calories !== undefined ? Math.round(n.calories as number) : "—"}
+          {n.calories !== null && n.calories !== undefined ? `${isEstimated ? "~" : ""}${Math.round(n.calories as number)}` : "—"}
         </span>
         <span className="text-sm text-muted-foreground font-medium">kcal / serving</span>
       </div>
@@ -97,12 +110,12 @@ function NutritionPanel({ nutrition }: { nutrition: CatalogRecipe["nutrition"] }
       {/* Macros */}
       <div className="bg-[var(--surface-raised)] border border-border/30 rounded-xl p-3">
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Macronutrients</p>
-        <MacroBar label="Protein" value={n.protein_g as number} unit="g" color="bg-blue-500/10 text-blue-400" icon={<Zap className="h-4 w-4" />} />
-        <MacroBar label="Carbohydrates" value={n.carbohydrates_g as number} unit="g" color="bg-amber-500/10 text-amber-400" icon={<Wheat className="h-4 w-4" />} />
-        <MacroBar label="Fat (total)" value={n.fat_g as number} unit="g" color="bg-rose-500/10 text-rose-400" icon={<Droplets className="h-4 w-4" />} />
-        <MacroBar label="Saturated Fat" value={n.saturated_fat_g as number} unit="g" color="bg-rose-500/10 text-rose-300" icon={<Droplets className="h-3.5 w-3.5" />} />
-        <MacroBar label="Fiber" value={n.fiber_g as number} unit="g" color="bg-green-500/10 text-green-400" icon={<Leaf className="h-4 w-4" />} />
-        <MacroBar label="Sugar" value={n.sugar_g as number} unit="g" color="bg-pink-500/10 text-pink-400" icon={<Flame className="h-3.5 w-3.5" />} />
+        <MacroBar label="Protein" value={n.protein_g as number} unit="g" color="bg-blue-500/10 text-blue-400" icon={<Zap className="h-4 w-4" />} estimated={isEstimated} />
+        <MacroBar label="Carbohydrates" value={n.carbohydrates_g as number} unit="g" color="bg-amber-500/10 text-amber-400" icon={<Wheat className="h-4 w-4" />} estimated={isEstimated} />
+        <MacroBar label="Fat (total)" value={n.fat_g as number} unit="g" color="bg-rose-500/10 text-rose-400" icon={<Droplets className="h-4 w-4" />} estimated={isEstimated} />
+        <MacroBar label="Saturated Fat" value={n.saturated_fat_g as number} unit="g" color="bg-rose-500/10 text-rose-300" icon={<Droplets className="h-3.5 w-3.5" />} estimated={isEstimated} />
+        <MacroBar label="Fiber" value={n.fiber_g as number} unit="g" color="bg-green-500/10 text-green-400" icon={<Leaf className="h-4 w-4" />} estimated={isEstimated} />
+        <MacroBar label="Sugar" value={n.sugar_g as number} unit="g" color="bg-pink-500/10 text-pink-400" icon={<Flame className="h-3.5 w-3.5" />} estimated={isEstimated} />
       </div>
 
       {/* Vitamins */}
@@ -490,10 +503,13 @@ export function RecipeDiscover() {
                 <div>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-1.5">
                     <Flame className="h-3.5 w-3.5 text-[var(--accent-gold)]" />
-                    Nutrition per serving · 32 USDA nutrients
+                    {(detailRecipe.nutrition?.per_serving as any)?._estimated
+                      ? "Estimated nutrition · USDA ingredient basis"
+                      : "Nutrition per serving · 32 USDA nutrients"
+                    }
                     {enrichLoading && <Loader2 className="h-3 w-3 animate-spin ml-1" />}
                   </p>
-                  {detailRecipe.nutrition ? (
+                  {detailRecipe.nutrition?.per_serving && Object.keys(detailRecipe.nutrition.per_serving).length > 0 ? (
                     <NutritionPanel nutrition={detailRecipe.nutrition} />
                   ) : (
                     <div className="text-xs text-muted-foreground italic py-4 text-center">
